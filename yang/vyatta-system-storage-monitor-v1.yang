@@ -129,6 +129,7 @@ module vyatta-system-storage-monitor-v1 {
 		container monitor {
 			configd:help "Storage Monitor.";
 			description "Configuration for storage monitoring service.";
+			configd:end "/lib/vyatta-fs-monitor/vyatta_fs_monitor";
 			uses monitor-fs-grp;
 		}
 	}
