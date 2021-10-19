@@ -1,0 +1,8 @@
+[Unit]
+Description=Vyatta filesystem monitoring service.
+ConditionPathExists=|/run/vyatta-fs-monitor/fsmon.conf
+
+[Service]
+Type=simple
+ExecStart=/lib/vyatta-fs-monitor/fsmon /run/vyatta-fs-monitor/fsmon.conf
+ExecReload=/bin/kill -HUP $MAINPID

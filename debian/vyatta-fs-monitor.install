@@ -1,0 +1,2 @@
+usr/bin/fsmon lib/vyatta-fs-monitor/
+scripts/vyatta_fs_monitor lib/vyatta-fs-monitor/

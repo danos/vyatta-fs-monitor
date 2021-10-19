@@ -1,0 +1,35 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1 
+
+# Request CFLAGS and LDFLAGS be exported so they can be picked up by
+# # the makefiles
+DPKG_EXPORT_BUILDFLAGS = 1
+#
+# # Resolve symbols at load time to catch undefined symbols earlier and
+# # to avoid unpredictable performance at runtime
+export DEB_BUILD_MAINT_OPTIONS=hardening=+bindnow
+
+PYLINT := $(shell which pylint3)
+ifndef PYLINT
+PYLINT := pylint
+endif
+
+%:
+	dh $@ --builddirectory=build --with=systemd --with=yang --buildsystem=meson+ninja
+
+override_dh_auto_test:
+	dh_auto_test
+	$(PYLINT) -E scripts/vyatta_fs_monitor
+
+override_dh_systemd_start:
+	dh_systemd_start -p vyatta-fs-monitor --name vyatta-fs-monitor --no-start vyatta-fs-monitor.service
+
+override_dh_systemd_enable:
+	dh_systemd_enable -p vyatta-fs-monitor --name vyatta-fs-monitor vyatta-fs-monitor.service
+
+scripts/vyatta/configd.py: /usr/lib/python3/dist-packages/vyatta/configd.py
+	mkdir -p scripts/vyatta
+	touch scripts/vyatta/__init__.py
+	ln -s /usr/lib/python3/dist-packages/vyatta/configd.py scripts/vyatta/configd.py

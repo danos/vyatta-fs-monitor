@@ -1,0 +1,21 @@
+Source: vyatta-fs-monitor
+Section: admin
+Priority: optional
+Maintainer: Vyatta Package Maintainers <DL-vyatta-help@att.com>
+Build-Depends: debhelper (>=9.20160709), dh-python, python3, dh-yang, dh-systemd (>=1.5), libconfuse-dev, libmount-dev, meson, pkg-config, pylint3, python3-vyatta-cfgclient
+Standards-Version: 3.9.8
+
+Package: vyatta-fs-monitor
+Architecture: any
+Depends: libconfuse2, libmount1, python3, python3-vyatta-cfgclient, ${shlibs:Depends}, ${misc:Depends}
+Description: Monitor file system space and mount permission
+ Daemon and Systyemd services for monitoring file system usage.
+
+Package: vyatta-system-storage-monitor-v1-yang
+Architecture: all
+Depends: vyatta-fs-monitor, ${yang:Depends}, ${misc:Depends}
+Description: Data model yang for Filesystem Monitoring Configuration
+ Yang models for age Filesystem space usage and mount permission
+ monitoring configuration.
+
+
