@@ -1,0 +1,135 @@
+module vyatta-system-storage-monitor-v1 {
+	namespace "urn:vyatta.com:mgmt:vyatta-system-storage-monitor:1";
+	prefix vyatta-system-storage-monitor-v1;
+
+	import vyatta-system-v1 {
+		prefix system;
+	}
+	import configd-v1 {
+		prefix configd;
+	}
+	import vyatta-system-storage-v1 {
+		prefix storage;
+	}
+	import vyatta-system-syslog-v1 {
+		prefix syslog;
+	}
+
+	organization "AT&T Inc.";
+	contact
+		"AT&T
+		Postal: 208 S. Akard Street
+		Dallas, TX 75202
+		Web: www.att.com";
+
+	description
+		"Copyright (c) 2021, AT&T Intellectual Property.
+		 All rights reserved.
+
+		 Redistribution and use in source and binary forms, with or without
+		 modification, are permitted provided that the following conditions
+		 are met:
+
+		 1. Redistributions of source code must retain the above copyright
+		    notice, this list of conditions and the following disclaimer.
+		 2. Redistributions in binary form must reproduce the above
+		    copyright notice, this list of conditions and the following
+		    disclaimer in the documentation and/or other materials provided
+		    with the distribution.
+		 3. Neither the name of the copyright holder nor the names of its
+		    contributors may be used to endorse or promote products derived
+		    from this software without specific prior written permission.
+
+		 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+		 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+		 LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+		 FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+		 COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+		 INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+		 BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+		 LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+		 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+		 LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
+		 ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+		 POSSIBILITY OF SUCH DAMAGE.
+
+		 SPDX-License-Identifier: BSD-3-Clause
+
+		 The YANG module for the Filesystem monitoring configuration.";
+
+	revision 2021-10-17 {
+		description "Initial revision of version 1.";
+	}
+
+	grouping syslog-grp {
+		container syslog {
+			configd:help "Logging options.";
+			description "Specify syslog level and facility to use for logging events.";
+			leaf level {
+				configd:help "Log level";
+				description "Specify message log level.";
+				type syslog:level;
+				default "warning";
+			}
+			leaf facility {
+				configd:help "Syslog facility to use.";
+				description "Specify Syslog facility to use for messages.";
+				type syslog:facility-no-all;
+				default "daemon";
+			}
+		}
+	}
+
+	grouping monitor-fs-grp {
+		list file-system {
+			configd:help "Monitor File system.";
+			description "Monitor the file system mounted at mountpoint every two
+						 minutes, and generate logs on occurrence of file system events.";
+			key "mountpoint";
+			leaf mountpoint {
+				configd:help "File system mount point.";
+				description "File system mount point to monitor.";
+				type string {
+					length "1..1024";
+					pattern "/|(/[^/]+)+" {
+						error-message "Absolute directory path with no trailing '/'.";
+					}
+				}
+			}
+
+			container read-only-remount {
+				configd:help "Monitor for read-only remount.";
+				description "Monitor if the file system is remounted read only and generate a syslog message.";
+				presence "Watch for read-only-remount.";
+				uses syslog-grp;
+			}
+
+			container space-usage {
+				configd:help "Monitor filesystem space usage.";
+				description "Monitor filesystem space usage and generate syslog message
+							 when the monitored conditions become true.";
+				list threshold {
+					description "List of thresholds to monitor. Emit a syslog message when the file
+								 system usage percentage exceeds the threshold.";
+					configd:help "Filesystem space usage percentage threshold.";
+					ordered-by system;
+					key "percent";
+					leaf percent {
+						configd:help "Percentage threshold.";
+						description "Emit a syslog message when the file system usage percentage exceeds the threshold.";
+						type system:percent;
+					}
+					uses syslog-grp;
+				}
+			}
+		}
+	}
+
+	augment /system:system/storage:storage {
+		container monitor {
+			configd:help "Storage Monitor.";
+			description "Configuration for storage monitoring service.";
+			uses monitor-fs-grp;
+		}
+	}
+}
