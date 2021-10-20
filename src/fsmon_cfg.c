@@ -150,13 +150,14 @@ static int load_config_ev(cfg_t *fs_cfg, struct fsm_event **pev, int *count)
 			goto err;
 		}
 
-		ev[i].high_usage = cfg_getfloat(ev_cfg, "percent");
-		if (ev[i].evtype == EVENT_FS_USED_SPACE_THRESHOLD
-		    && ev[i].high_usage <= FSM_MIN_USED_SPACE_THRESHOLD) {
-			fprintf(stderr,
-				"%s: event %d: invalid usage percent %g\n",
-				__func__, i, ev[i].high_usage);
-			goto err;
+		if (ev[i].evtype == EVENT_FS_USED_SPACE_THRESHOLD) {
+			ev[i].high_usage = cfg_getfloat(ev_cfg, "percent");
+		        if (ev[i].high_usage <= FSM_MIN_USED_SPACE_THRESHOLD) {
+				fprintf(stderr,
+					"%s: event %d: invalid usage percent %g\n",
+					__func__, i, ev[i].high_usage);
+				goto err;
+			}
 		}
 	}
 	if (pev)
