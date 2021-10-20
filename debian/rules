@@ -28,8 +28,3 @@ override_dh_systemd_start:
 
 override_dh_systemd_enable:
 	dh_systemd_enable -p vyatta-fs-monitor --name vyatta-fs-monitor vyatta-fs-monitor.service
-
-scripts/vyatta/configd.py: /usr/lib/python3/dist-packages/vyatta/configd.py
-	mkdir -p scripts/vyatta
-	touch scripts/vyatta/__init__.py
-	ln -s /usr/lib/python3/dist-packages/vyatta/configd.py scripts/vyatta/configd.py
