@@ -179,9 +179,11 @@ static int load_config_fs(cfg_t *cfg, struct fsm_fs **pfs, int *count)
 
 	n = cfg_size(cfg, "filesystem");
 	if (n == 0) {
-		fprintf(stderr, "%s:not filesystem sections in config\n",
+		*pfs = NULL;
+		*count = 0;
+		fprintf(stderr, "%s:no filesystem sections in config\n",
 			__func__);
-		return -1;
+		return 0;
 	}
 
 	struct fsm_fs *fs = calloc(sizeof(*fs), n);

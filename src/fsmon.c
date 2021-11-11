@@ -151,18 +151,18 @@ static void copy_fs_state(struct fsm_fs_state *to, struct fsm_fs_state *from)
 	to->prev_ro_state = from->ro_state;
 }
 
-static int reload_config(struct fsm_context *ctx)
+static int create_fs_states(struct fsm_context *ctx, struct fsm_config *fsm_cfg,
+			    struct fsm_fs_state **pstate)
 {
-	struct fsm_config *fsm_cfg;
-	int nr_fs;
-	struct fsm_fs_state *state;
-	struct fsm_fs_state *old_state;
 	int i;
+	int nr_fs = fsm_cfg->nr_fs;
+	struct fsm_fs_state *state = NULL;
+	struct fsm_fs_state *old_state;
 
-	if (load_config(ctx->cfgfile, &fsm_cfg) < 0)
-		return -1;
-
-	nr_fs = fsm_cfg->nr_fs;
+	if (nr_fs == 0) {
+		*pstate = NULL;
+		return 0;
+	}
 	state = calloc(nr_fs, sizeof(*state));
 	if (state == NULL) {
 		fprintf(stderr, "%s: Failed to allocate %zu bytes\n", __func__,
@@ -179,6 +179,20 @@ static int reload_config(struct fsm_context *ctx)
 			copy_fs_state(&state[i], old_state);
 		state[i].fs_cfg = &fsm_cfg->fs[i];
 	}
+	*pstate = state;
+	return 0;
+}
+
+static int reload_config(struct fsm_context *ctx)
+{
+	struct fsm_config *fsm_cfg;
+	struct fsm_fs_state *state = NULL;
+
+	if (load_config(ctx->cfgfile, &fsm_cfg) < 0)
+		return -1;
+
+	if (create_fs_states(ctx, fsm_cfg, &state) < 0)
+		return -1;
 
 	if (ctx->fsm_fs_state)
 		free(ctx->fsm_fs_state);
@@ -186,7 +200,7 @@ static int reload_config(struct fsm_context *ctx)
 		fsm_config_free(ctx->fsm_cfg);
 
 	ctx->fsm_cfg = fsm_cfg;
-	ctx->nr_fs = nr_fs;
+	ctx->nr_fs = fsm_cfg->nr_fs;
 	ctx->fsm_fs_state = state;
 	return 0;
 }
@@ -382,6 +396,8 @@ static void log_all_fs_events(struct fsm_context *ctx)
 {
 	struct fsm_fs_state *state;
 
+	if (ctx->fsm_fs_state == NULL)
+		return;
 	for(state = &ctx->fsm_fs_state[0];
 	    state < &ctx->fsm_fs_state[ctx->nr_fs]; ++state) {
 		log_fs_events(ctx, state);
