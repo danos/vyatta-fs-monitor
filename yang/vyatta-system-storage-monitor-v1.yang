@@ -15,16 +15,17 @@ module vyatta-system-storage-monitor-v1 {
 		prefix syslog;
 	}
 
-	organization "AT&T Inc.";
+	organization "Ciena Corporation";
 	contact
-		"AT&T
-		Postal: 208 S. Akard Street
-		Dallas, TX 75202
-		Web: www.att.com";
+		"Web URL: https://www.ciena.com/
+		Postal:  7035 Ridge Road
+		Hanover, Maryland 21076
+		U.S.A.
+		Phone:   +1 800-921-1144
+		Fax:     +1 410-694-5750";
 
 	description
-		"Copyright (c) 2021, AT&T Intellectual Property.
-		 All rights reserved.
+		"Copyright (c) 2021, Ciena Corporation, All Rights Reserved.
 
 		 Redistribution and use in source and binary forms, with or without
 		 modification, are permitted provided that the following conditions
@@ -57,7 +58,7 @@ module vyatta-system-storage-monitor-v1 {
 
 		 The YANG module for the Filesystem monitoring configuration.";
 
-	revision 2021-10-17 {
+	revision 2021-11-11 {
 		description "Initial revision of version 1.";
 	}
 
@@ -86,6 +87,9 @@ module vyatta-system-storage-monitor-v1 {
 			description "Monitor the file system mounted at mountpoint every two
 						 minutes, and generate logs on occurrence of file system events.";
 			key "mountpoint";
+			must "read-only-remount or space-usage" {
+				error-message "Must configure read-only-remount and/or space-usage.";
+			}
 			leaf mountpoint {
 				configd:help "File system mount point.";
 				description "File system mount point to monitor.";
